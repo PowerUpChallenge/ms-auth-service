@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.0-debian
+    container_name: mysql-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: ${R2DBC_PASSWORD}
+      MYSQL_DATABASE: ${R2DBC_DATABASE}
+      MYSQL_USER: ${R2DBC_USERNAME}
+      MYSQL_PASSWORD: ${R2DBC_PASSWORD}
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    command:
+      --bind-address=0.0.0.0
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --performance-schema=off
+      --innodb_buffer_pool_size=64M
+      --key_buffer_size=8M
+      --max_connections=50
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

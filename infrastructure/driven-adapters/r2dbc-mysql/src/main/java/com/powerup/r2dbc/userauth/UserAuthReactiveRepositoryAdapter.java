@@ -1,8 +1,7 @@
-package com.powerup.r2dbc;
+package com.powerup.r2dbc.userauth;
 
 import com.powerup.model.userauth.UserAuth;
 import com.powerup.model.userauth.gateways.UserAuthRepository;
-import com.powerup.r2dbc.entity.UserAuthEntity;
 import com.powerup.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;

@@ -1,6 +1,5 @@
-package com.powerup.r2dbc;
+package com.powerup.r2dbc.userauth;
 
-import com.powerup.r2dbc.entity.UserAuthEntity;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;

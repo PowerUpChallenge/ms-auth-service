@@ -1,6 +1,111 @@
 package com.powerup.usecase.userauth;
 
-import lombok.RequiredArgsConstructor;
-@RequiredArgsConstructor
+import com.powerup.model.userauth.UserAuth;
+import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Use case class for managing UserAuth entities.
+ * Provides methods for saving, retrieving, updating, and deleting users.
+ * Uses reactive types Mono and Flux for asynchronous operations.
+ * @version 1.0
+ * @since 2025-08-23
+ */
 public class UserAuthUseCase {
+
+    private final com.powerup.model.userauth.gateways.UserAuthRepository userAuthRepository;
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+    // Error message constants in English
+    private static final String ERROR_NAME_REQUIRED = "Name is required";
+    private static final String ERROR_LASTNAME_REQUIRED = "Lastname is required";
+    private static final String ERROR_EMAIL_REQUIRED = "Email is required";
+    private static final String ERROR_EMAIL_INVALID = "Invalid email format";
+    private static final String ERROR_EMAIL_DUPLICATE = "Email is already registered";
+    private static final String ERROR_SALARY_REQUIRED = "Base salary is required";
+    private static final String ERROR_SALARY_RANGE = "Base salary must be between 0 and 15000000";
+    private static final String MAX_SALARY_RANGE = "15000000";
+
+
+    public UserAuthUseCase(com.powerup.model.userauth.gateways.UserAuthRepository userAuthRepository) {
+        this.userAuthRepository = userAuthRepository;
+    }
+
+    /**
+     * Retrieve a user by their email.
+     *
+     * @param email The email of the user.
+     * @return A Mono emitting the user if found, or empty if not found.
+     */
+    public Mono<UserAuth> getUserByEmail(String email) {
+        return userAuthRepository.getByEmail(email);
+    }
+
+    /**
+     * Save a new user.
+     *
+     * @param user The user to be saved.
+     * @return A Mono signaling completion.
+     */
+    public Mono<Void> saveUser(UserAuth user) {
+
+        List<String> errors = new ArrayList<>();
+        /**Gestión de las validacions*/
+        addError(errors, validateName(user.getName()));
+        addError(errors, validateLastname(user.getLastname()));
+        addError(errors, validateEmail(user.getEmail()));
+        addError(errors, validateBaseSalary(user.getBaseSalary()));
+
+        if (!errors.isEmpty()) {
+            return Mono.error(new IllegalArgumentException(String.join(", ", errors)));
+        }
+
+        return userAuthRepository.getByEmail(user.getEmail())
+                .flatMap(existingUser -> Mono.error(new IllegalArgumentException(ERROR_EMAIL_DUPLICATE)))
+                .switchIfEmpty(userAuthRepository.saveUser(user).then())
+                .then();
+    }
+
+    private void addError(List<String> errors, String error) {
+        if (error != null) errors.add(error);
+    }
+
+    private String validateName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return ERROR_NAME_REQUIRED;
+        }
+        return null;
+    }
+
+    private String validateLastname(String lastname) {
+        if (lastname == null || lastname.trim().isEmpty()) {
+            return ERROR_LASTNAME_REQUIRED;
+        }
+        return null;
+    }
+
+    private String validateEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return ERROR_EMAIL_REQUIRED;
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            return ERROR_EMAIL_INVALID;
+        }
+        return null;
+    }
+
+    private String validateBaseSalary(java.math.BigDecimal baseSalary) {
+        if (baseSalary == null) {
+            return ERROR_SALARY_REQUIRED;
+        }
+        if (baseSalary.compareTo(java.math.BigDecimal.ZERO) < 0 ||
+            baseSalary.compareTo(new java.math.BigDecimal(MAX_SALARY_RANGE)) > 0) {
+            return ERROR_SALARY_RANGE;
+        }
+        return null;
+    }
 }

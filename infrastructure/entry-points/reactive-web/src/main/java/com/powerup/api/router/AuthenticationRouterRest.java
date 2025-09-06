@@ -1,7 +1,7 @@
 package com.powerup.api.router;
 
+import com.powerup.api.handler.AuthenticationHandler;
 import com.powerup.api.config.RoutesProperties;
-import com.powerup.api.handler.UserAuthHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,40 +12,46 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+/**
+ * Router class for handling authentication-related endpoints.
+ * Defines routes for user login and token generation.
+ *
+ * @version 1.0
+ * @since 2025-08-27 *
+ */
 @Component
 @RequiredArgsConstructor
-@Tag(name = "Users", description = "Endpoints for users handling")
-public class UserAuthRouterRest {
+@Tag(name = "Authentication", description = "Endpoints for user authentication and token generation")
+public class AuthenticationRouterRest {
 
-    private final UserAuthHandler userHandler;
+    private final AuthenticationHandler handler;
     private final RoutesProperties routesProperties;
 
-    @Bean(name = "userAuthRouterFunction")
+    @Bean(name = "authenticationRouterFunction")
     @RouterOperations({
             @RouterOperation(
-                    path = "/users/save",
+                    path = "/auth/login",
                     operation = @Operation(
-                            operationId = "saveUser",
-                            summary = "Save a new user",
-                            description = "Saves a new user to the system.",
+                            operationId = "login",
+                            summary = "Authenticate user",
+                            description = "Validates user credentials and generates a JWT token.",
                             responses = {
                                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                                             responseCode = "200",
-                                            description = "User saved successfully"
+                                            description = "Successful authentication"
                                     ),
                                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                                            responseCode = "400",
-                                            description = "Invalid user data"
+                                            responseCode = "401",
+                                            description = "Invalid credentials"
                                     )
                             }
                     )
             )
     })
     public RouterFunction<ServerResponse> routerFunction() {
-        return route(GET(routesProperties.getUserApiPath()), userHandler::saveUser);
+        return route(POST(routesProperties.getAuthApiPath()), handler::login);
     }
-
 }

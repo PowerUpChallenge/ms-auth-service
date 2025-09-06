@@ -1,19 +1,37 @@
 package com.powerup.api;
 
+import com.powerup.api.config.RoutesProperties;
+import com.powerup.api.handler.UserAuthHandler;
+import com.powerup.api.mapper.UserAuthMapper;
+import com.powerup.api.router.UserAuthRouterRest;
+import com.powerup.usecase.userauth.UserAuthUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@ContextConfiguration(classes = {RouterRest.class, UserAuthHandler.class})
+@ContextConfiguration(classes = {UserAuthRouterRest.class, UserAuthHandler.class})
 @WebFluxTest
-class RouterRestTest {
+class UserAuthRouterRestTest {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @MockitoBean
+    private UserAuthHandler userHandler;
+
+    @MockitoBean
+    private RoutesProperties routesProperties;
+
+    @MockitoBean
+    private UserAuthUseCase userAuthUseCase;
+
+    @MockitoBean
+    private UserAuthMapper userAuthMapper;
 
     @Test
     void testListenGETUseCase() {

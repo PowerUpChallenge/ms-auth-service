@@ -42,16 +42,61 @@ public class JjwtProviderAdapter implements JwtProvider {
 
     @Override
     public Mono<Boolean> validate(String token) {
-        return null;
+        return Mono.fromSupplier(() -> {
+            try {
+                Jwts.parserBuilder()
+                        .setSigningKey(secretKey)
+                        .build()
+                        .parseClaimsJws(token);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        });
     }
 
     @Override
     public Mono<String> getUsername(String token) {
-        return null;
+        return Mono.fromSupplier(()           -> {
+            try {
+                return Jwts.parserBuilder()
+                        .setSigningKey(secretKey)
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody()
+                        .getSubject();
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
     @Override
     public Mono<Set<String>> getRoles(String token) {
-        return null;
+        return Mono.fromSupplier(() -> {
+            try {
+                Object roles = Jwts.parserBuilder()
+                        .setSigningKey(secretKey)
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody()
+                        .get(ROLES);
+                if (roles instanceof String) {
+                    return Set.of((String) roles);
+                } else if (roles instanceof Iterable<?>) {
+                    Set<String> rolesSet = new java.util.HashSet<>();
+                    for (Object role : (Iterable<?>) roles) {
+                        if (role instanceof String) {
+                            rolesSet.add((String) role);
+                        }
+                    }
+                    return rolesSet;
+                } else {
+                    return Set.of();
+                }
+            } catch (Exception e) {
+                return Set.of();
+            }
+        });
     }
 }

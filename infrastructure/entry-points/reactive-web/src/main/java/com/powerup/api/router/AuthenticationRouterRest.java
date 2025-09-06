@@ -1,8 +1,12 @@
 package com.powerup.api.router;
 
-import com.powerup.api.handler.AuthenticationHandler;
 import com.powerup.api.config.RoutesProperties;
+import com.powerup.api.dto.request.AuthRequestDTO;
+import com.powerup.api.handler.AuthenticationHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.RouterOperation;
@@ -38,6 +42,13 @@ public class AuthenticationRouterRest {
                             operationId = "login",
                             summary = "Authenticate user",
                             description = "Validates user credentials and generates a JWT token.",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = AuthRequestDTO.class)
+                                    )
+                            ),
                             responses = {
                                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                                             responseCode = "200",

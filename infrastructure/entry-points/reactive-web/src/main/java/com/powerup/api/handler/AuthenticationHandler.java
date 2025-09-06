@@ -33,9 +33,13 @@ public class AuthenticationHandler {
     }
 
     public Mono<ServerResponse> login(ServerRequest request) {
-        log.info(SAVE_USER_START, request.path());
+        log.info(AUTHENTICATE_USER_START, request.path());
         return request.bodyToMono(AuthRequestDTO.class)
-                .flatMap(authRequestDTO -> authUseCase.authenticate(authRequestDTO.getUsername(), authRequestDTO.getPassword()))
+                .flatMap(authRequestDTO ->
+                        authUseCase.authenticate(authRequestDTO.getUsername(), authRequestDTO.getPassword())
+                                .doOnSuccess(auth -> log.info(AUTHENTICATE_USER_SUCCESS, request.path(), authRequestDTO.getUsername()))
+                                .doOnError(error -> log.error(AUTHENTICATE_USER_FAILURE, request.path(), error.getMessage()))
+                )
                 .map(authResponseMapper::toResponseDTO)
                 .flatMap(responseDTO -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)

@@ -6,6 +6,7 @@ import com.powerup.model.userauth.AuthResponse;
 import com.powerup.model.userauth.gateways.JwtProvider;
 import com.powerup.model.userauth.gateways.PasswordEncoder;
 import com.powerup.model.userauth.gateways.UserAuthRepository;
+import com.powerup.usecase.exceptions.InvalidCredentialsException;
 import reactor.core.publisher.Mono;
 
 /**
@@ -20,6 +21,8 @@ public class AuthenticationUseCase {
     private final RoleAuthRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+
+    private static final String ERROR_INVALID_CREDENTIALS = "User or password invalid";
 
     /**
      * Constructor for AuthenticationUseCase.
@@ -46,10 +49,10 @@ public class AuthenticationUseCase {
      */
     public Mono<AuthResponse> authenticate(String username, String password) {
         return userRepository.getByEmail(username)
-                .switchIfEmpty(Mono.error(new RuntimeException("Usuario o contraseña inválidos")))
+                .switchIfEmpty(Mono.error(new InvalidCredentialsException(ERROR_INVALID_CREDENTIALS)))
                 .flatMap(user -> {
                     if (!user.isEnabled() || !passwordEncoder.matches(password, user.getPasswordHash())) {
-                        return Mono.error(new RuntimeException("Usuario o contraseña inválidos"));
+                        return Mono.error(new InvalidCredentialsException(ERROR_INVALID_CREDENTIALS));
                     }
                     Mono<RoleAuth> role = roleRepository.findByIdRole(user.getIdRole());
                     return role.flatMap(roleAuth ->

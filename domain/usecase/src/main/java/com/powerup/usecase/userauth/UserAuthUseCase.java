@@ -1,6 +1,9 @@
 package com.powerup.usecase.userauth;
 
 import com.powerup.model.userauth.UserAuth;
+import com.powerup.usecase.exceptions.EmailAlreadyExistException;
+import com.powerup.usecase.exceptions.UserAuthNotFoundException;
+import com.powerup.usecase.exceptions.UserAuthValidationException;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -11,16 +14,17 @@ import java.util.regex.Pattern;
  * Use case class for managing UserAuth entities.
  * Provides methods for saving, retrieving, updating, and deleting users.
  * Uses reactive types Mono and Flux for asynchronous operations.
+ *
  * @version 1.0
  * @since 2025-08-23
  */
 public class UserAuthUseCase {
 
     private final com.powerup.model.userauth.gateways.UserAuthRepository userAuthRepository;
+    private final com.powerup.model.userauth.gateways.PasswordEncoder passwordEncoder;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
-    // Error message constants in English
     private static final String ERROR_NAME_REQUIRED = "Name is required";
     private static final String ERROR_LASTNAME_REQUIRED = "Lastname is required";
     private static final String ERROR_EMAIL_REQUIRED = "Email is required";
@@ -31,8 +35,9 @@ public class UserAuthUseCase {
     private static final String MAX_SALARY_RANGE = "15000000";
 
 
-    public UserAuthUseCase(com.powerup.model.userauth.gateways.UserAuthRepository userAuthRepository) {
+    public UserAuthUseCase(com.powerup.model.userauth.gateways.UserAuthRepository userAuthRepository, com.powerup.model.userauth.gateways.PasswordEncoder passwordEncoder) {
         this.userAuthRepository = userAuthRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -42,7 +47,8 @@ public class UserAuthUseCase {
      * @return A Mono emitting the user if found, or empty if not found.
      */
     public Mono<UserAuth> getUserByEmail(String email) {
-        return userAuthRepository.getByEmail(email);
+        return userAuthRepository.getByEmail(email)
+                .switchIfEmpty(Mono.error(new UserAuthNotFoundException(email)));
     }
 
     /**
@@ -54,19 +60,23 @@ public class UserAuthUseCase {
     public Mono<Void> saveUser(UserAuth user) {
 
         List<String> errors = new ArrayList<>();
-        /**Gestión de las validacions*/
+        /**Custom UserAuth Validations*/
         addError(errors, validateName(user.getName()));
         addError(errors, validateLastname(user.getLastname()));
         addError(errors, validateEmail(user.getEmail()));
         addError(errors, validateBaseSalary(user.getBaseSalary()));
 
         if (!errors.isEmpty()) {
-            return Mono.error(new IllegalArgumentException(String.join(", ", errors)));
+            return Mono.error(new UserAuthValidationException(String.join(", ", errors)));
         }
 
         return userAuthRepository.getByEmail(user.getEmail())
-                .flatMap(existingUser -> Mono.error(new IllegalArgumentException(ERROR_EMAIL_DUPLICATE)))
-                .switchIfEmpty(userAuthRepository.saveUser(user).then())
+                .flatMap(existingUser -> Mono.error(new EmailAlreadyExistException(ERROR_EMAIL_DUPLICATE)))
+                .switchIfEmpty(Mono.defer(() -> {
+                    user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+                    user.setEnabled(true);
+                    return userAuthRepository.saveUser(user);
+                }))
                 .then();
     }
 

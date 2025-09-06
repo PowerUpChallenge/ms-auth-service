@@ -1,7 +1,7 @@
 package com.powerup.api.config;
 
-import com.powerup.api.Handler;
-import com.powerup.api.RouterRest;
+import com.powerup.api.handler.UserAuthHandler;
+import com.powerup.api.router.UserAuthRouterRest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@ContextConfiguration(classes = {RouterRest.class, Handler.class})
+@ContextConfiguration(classes = {UserAuthRouterRest.class, UserAuthHandler.class})
 @WebFluxTest
 @Import({CorsConfig.class, SecurityHeadersConfig.class})
 class ConfigTest {

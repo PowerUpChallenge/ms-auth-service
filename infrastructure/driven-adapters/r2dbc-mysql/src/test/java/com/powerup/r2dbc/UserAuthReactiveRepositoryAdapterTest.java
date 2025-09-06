@@ -1,78 +1,103 @@
 package com.powerup.r2dbc;
-
+import com.powerup.model.userauth.UserAuth;
+import com.powerup.r2dbc.userauth.UserAuthEntity;
+import com.powerup.r2dbc.userauth.UserAuthReactiveRepository;
+import com.powerup.r2dbc.userauth.UserAuthReactiveRepositoryAdapter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-@ExtendWith(MockitoExtension.class)
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 class UserAuthReactiveRepositoryAdapterTest {
-    // TODO: change four you own tests
+
+    @Mock
+    private UserAuthReactiveRepository repository;
+
+    @Mock
+    private ObjectMapper mapper;
+
+    @Mock
+    private TransactionalOperator transactionalOperator;
 
     @InjectMocks
-    MyReactiveRepositoryAdapter repositoryAdapter;
+    private UserAuthReactiveRepositoryAdapter adapter;
 
-    @Mock
-    UserAuthReactiveRepository repository;
+    private UserAuth userDomain;
+    private UserAuthEntity userEntity;
 
-    @Mock
-    ObjectMapper mapper;
+    @BeforeEach
+    void init() {
+        MockitoAnnotations.openMocks(this);
 
-    @Test
-    void mustFindValueById() {
+        userDomain = new UserAuth(
+                "12345",
+                1,
+                "Luis",
+                "Velez",
+                LocalDate.of(1990, 1, 1),
+                "Street 123",
+                "555-1234",
+                "luis@test.com",
+                new BigDecimal("1000000"),
+                "hash123",
+                1L,
+                true
+        );
 
-        when(repository.findById("1")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+        userEntity = new UserAuthEntity();
+        userEntity.setIdNumber("12345");
+        userEntity.setName("Luis");
 
-        Mono<Object> result = repositoryAdapter.findById("1");
+        // mapeo dominio → entidad
+        when(mapper.map(userDomain, UserAuthEntity.class)).thenReturn(userEntity);
+        // mapeo entidad → dominio
+        when(mapper.map(userEntity, UserAuth.class)).thenReturn(userDomain);
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
+        // mock de transactionalOperator
+        when(transactionalOperator.transactional((Flux<Object>) any())).thenAnswer(inv -> inv.getArgument(0));
     }
 
     @Test
-    void mustFindAllValues() {
-        when(repository.findAll()).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    void saveUser_shouldSaveAndApplyTransaction() {
+        when(repository.save(userEntity)).thenReturn(Mono.just(userEntity));
 
-        Flux<Object> result = repositoryAdapter.findAll();
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.saveUser(userDomain))
                 .verifyComplete();
+
+        verify(repository).save(userEntity);
+        verify(transactionalOperator).transactional((Mono<Object>) any());
     }
 
     @Test
-    void mustFindByExample() {
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    void getByEmail_shouldReturnMappedUser() {
+        when(repository.findByEmail("luis@test.com")).thenReturn(Mono.just(userEntity));
 
-        Flux<Object> result = repositoryAdapter.findByExample("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.getByEmail("luis@test.com"))
+                .expectNext(userDomain)
                 .verifyComplete();
+
+        verify(repository).findByEmail("luis@test.com");
+        verify(mapper).map(userEntity, UserAuth.class);
     }
 
     @Test
-    void mustSaveValue() {
-        when(repository.save("test")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    void saveUser_shouldPropagateError() {
+        when(repository.save(userEntity)).thenReturn(Mono.error(new RuntimeException("DB error")));
 
-        Mono<Object> result = repositoryAdapter.save("test");
+        StepVerifier.create(adapter.saveUser(userDomain))
+                .expectErrorMatches(e -> e instanceof RuntimeException && e.getMessage().equals("DB error"))
+                .verify();
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
+        verify(repository).save(userEntity);
     }
 }

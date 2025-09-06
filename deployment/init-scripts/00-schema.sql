@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS user_auth (
     FOREIGN KEY (id_role) REFERENCES role_auth(id_role)
 );
 
+ALTER TABLE `ms-auth`.`user_auth`
+MODIFY COLUMN `user_id` bigint NOT NULL AUTO_INCREMENT FIRST;
+
 CREATE INDEX idx_user_auth_email ON user_auth(email);
 CREATE INDEX idx_user_auth_idnumber ON user_auth(id_number);
 CREATE INDEX idx_user_auth_role ON user_auth(id_role);

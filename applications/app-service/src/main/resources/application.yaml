@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   application:
-    name: "ms-loan-service"
+    name: "ms-auth-service"
   devtools:
     add-properties: false
   h2:
@@ -22,3 +22,20 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+adapters:
+  r2dbc:
+    host: "${R2DBC_HOST:localhost}"
+    port: "${R2DBC_PORT:3307}"
+    database: "${R2DBC_DATABASE:ms-auth}"
+    username: "${R2DBC_USERNAME:userdb}"
+    password: "${R2DBC_PASSWORD:S3cureP@ssw0rd!}"
+
+security:
+  jwt:
+    secret: "${JWT_SECRET:9A35EC3D8BFBCAA053B97672C419B520135C6B02BF254C1BFE4B606667774E4D}"
+    ttl-seconds: "${JWT_EXPIRATION:3600}"
+
+routes:
+  auth-api-path: "/api/v1/auth/login"
+  user-api-path: "/api/v1/usuarios"

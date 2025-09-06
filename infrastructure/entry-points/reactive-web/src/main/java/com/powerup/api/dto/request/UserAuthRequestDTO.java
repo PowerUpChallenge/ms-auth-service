@@ -25,6 +25,7 @@ public class UserAuthRequestDTO {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
+    private String passwordHash;
     private Integer idRole;
 
 }

@@ -80,6 +80,17 @@ public class UserAuthUseCase {
                 .then();
     }
 
+    /**
+     * Retrieve a user by their ID number.
+     *
+     * @param idNumber The ID number of the user.
+     * @return A Mono emitting the user if found, or an error if not found.
+     */
+    public Mono<UserAuth> getUserByIdNumber(String idNumber) {
+        return userAuthRepository.getByIdNumber(idNumber)
+                .switchIfEmpty(Mono.error(new UserAuthNotFoundException(idNumber)));
+    }
+
     private void addError(List<String> errors, String error) {
         if (error != null) errors.add(error);
     }

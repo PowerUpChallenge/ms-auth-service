@@ -20,4 +20,11 @@ public interface UserAuthReactiveRepository extends ReactiveCrudRepository<UserA
      */
     Mono<UserAuthEntity> findByEmail(String email);
 
+    /**
+     * Finds a UserAuthEntity by its ID number.
+     * @param idNumber the ID number of the user
+     * @return a Mono emitting the found UserAuthEntity or empty if not found
+     */
+    Mono<UserAuthEntity> findByIdNumber(String idNumber);
+
 }

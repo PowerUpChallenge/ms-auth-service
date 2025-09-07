@@ -1,6 +1,7 @@
 package com.powerup.api.handler;
 
 import com.powerup.api.dto.request.UserAuthRequestDTO;
+import com.powerup.api.dto.request.UserValidateRequestDTO;
 import com.powerup.api.mapper.UserAuthMapper;
 import com.powerup.usecase.userauth.UserAuthUseCase;
 import lombok.RequiredArgsConstructor;
@@ -49,5 +50,18 @@ public class UserAuthHandler {
                                         ))
                                 )
                 );
+    }
+
+    public Mono<ServerResponse> getUserByIdNumber(ServerRequest request) {
+        log.info(GET_USER_START, request.path());
+        return request.bodyToMono(UserValidateRequestDTO.class)
+                .flatMap(userValidateRequest -> {
+                    log.info(GET_USER_SUCCESS, request.path(), userValidateRequest.getIdNumber());
+                    return userAuthUseCase.getUserByIdNumber(userValidateRequest.getIdNumber())
+                            .flatMap(user -> ServerResponse.ok()
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .bodyValue(userAuthMapper.toValidateResponseDTO(user)))
+                            .switchIfEmpty(ServerResponse.notFound().build());
+                });
     }
 }

@@ -42,4 +42,10 @@ public class UserAuthReactiveRepositoryAdapter extends ReactiveAdapterOperations
                 .map(userEntity -> mapper.map(userEntity, UserAuth.class));
     }
 
+    @Override
+    public Mono<UserAuth> getByIdNumber(String idNumber) {
+        return repository.findByIdNumber(idNumber)
+                .map(userAuthEntity -> mapper.map(userAuthEntity, UserAuth.class));
+    }
+
 }

@@ -17,6 +17,10 @@ public class LogMessages {
     public static final String SAVE_USER_SUCCESS = "[Endpoint: {} | Action: Save user | User saved successfully.";
     public static final String SAVE_USER_ERROR = "Endpoint: {} | Action: Save user | Error saving user, cause: {}";
 
+    public static final String GET_USER_START = "Endpoint: {} | Action: Get user by idNumber | Starting user retrieval for idNumber";
+    public static final String GET_USER_SUCCESS = "Endpoint: {} | Action: Get user by idNumber | User retrieved successfully for idNumber: {}";
+    public static final String GET_USER_ERROR = "Endpoint: {} | Action: Get user by idNumber | Error retrieving user for idNumber: {}, cause: {}";
+
     /**AuthenticationHandler*/
     public static final String AUTHENTICATE_USER_START = "Endpoint: {} | Action: Authenticate user | Starting authentication";
     public static final String AUTHENTICATE_USER_SUCCESS = "Endpoint: {} | Action: Authenticate user | Authentication successful for user: {}";

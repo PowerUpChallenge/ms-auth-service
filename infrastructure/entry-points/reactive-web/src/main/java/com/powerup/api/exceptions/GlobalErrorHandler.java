@@ -1,6 +1,7 @@
 package com.powerup.api.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
@@ -38,6 +39,7 @@ public class GlobalErrorHandler  implements ErrorWebExceptionHandler {
 
         ExceptionMapper.ErrorDefinition definition = exceptionMapper.map(ex);
         response.setStatusCode(definition.status());
+        log.error(Arrays.toString(ex.getStackTrace()));
         log.error(ex.getMessage());
         ErrorCustomResponse errorCustomResponse = new ErrorCustomResponse(definition.message(), definition.status().value());
 

@@ -28,4 +28,12 @@ public interface UserAuthRepository {
      */
     Mono<UserAuth> getByEmail(String email);
 
+    /**
+     * Retrieve a user by their ID number.
+     *
+     * @param idNumber The ID number of the user.
+     * @return A Mono emitting the user if found, or empty if not found.
+     */
+    Mono<UserAuth> getByIdNumber(String idNumber);
+
 }

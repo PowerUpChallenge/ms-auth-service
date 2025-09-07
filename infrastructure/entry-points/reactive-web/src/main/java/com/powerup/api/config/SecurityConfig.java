@@ -12,6 +12,10 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_ASESOR = "ASESOR";
+    private static final String ROLE_USUARIO = "USUARIO";
+
     public SecurityConfig(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
     }
@@ -38,6 +42,7 @@ public class SecurityConfig {
                         .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/v3/api-docs/**").permitAll()
                         .pathMatchers("/webjars/**").permitAll()
+                        .pathMatchers("/api/v1/usuarios").hasAnyRole(ROLE_ADMIN, ROLE_ASESOR)
                         .anyExchange().authenticated()
                 )
                 .authenticationManager(authManager)

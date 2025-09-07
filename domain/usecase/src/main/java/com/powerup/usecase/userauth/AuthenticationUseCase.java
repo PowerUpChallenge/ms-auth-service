@@ -56,7 +56,7 @@ public class AuthenticationUseCase {
                     }
                     Mono<RoleAuth> role = roleRepository.findByIdRole(user.getIdRole());
                     return role.flatMap(roleAuth ->
-                            jwtProvider.generateToken(user.getEmail(), roleAuth.getName())
+                            jwtProvider.generateToken(user.getUserId()+"", roleAuth.getName())
                     ).map(token -> new AuthResponse(token, "Bearer"));
                 });
     }

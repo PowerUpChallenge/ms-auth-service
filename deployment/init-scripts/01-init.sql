@@ -20,8 +20,7 @@ INSERT INTO user_auth (
     'admin@example.com',
     5000.00,
     1,
-    -- Password: admin123 (ejemplo bcrypt hash válido)
-    '$2a$10$Dj.ZtSHRaVgoHNqRtqTIxeEPWGtfPO8FwMOoXIN9XWDY5VZnR9.Tq',
+    '$2a$10$TFsSP7yxrt82FZLhPCohmOym4y1QpSo.hzmwMXnKJSMZwggcx4AOq',
     true
 );
 
@@ -41,28 +40,6 @@ INSERT INTO user_auth (
     'juan.perez@example.com',
     3000.00,
     2,
-    -- Password: Asesor123
-    '$2a$10$8hiNZ9j8v3VshGVukDczYehyChq3O6sZqQVRPcKPaIuU9cShE1xiy',
-    true
-);
-
--- usuario cliente
-INSERT INTO user_auth (
-    user_id, id_number, id_type, name, lastname, birth_date,
-    address, phone, email, base_salary, id_role, password_hash, enabled
-) VALUES (
-    3,
-    '1122334455',
-    1,
-    'María',
-    'González',
-    '1992-08-20',
-    'Calle Secundaria 789',
-    '+1122334455',
-    'maria.gonzalez@example.com',
-    2000.00,
-    3,
-    -- Password: Cliente123
-    '$2a$10$YMb1W4TTgZL.kO82iMldEuTdnzHtP8aXkNhMC8j5gXe5geM7fFLlq',
+    '$2a$10$TFsSP7yxrt82FZLhPCohmOym4y1QpSo.hzmwMXnKJSMZwggcx4AOq',
     true
 );
